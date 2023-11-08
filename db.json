@@ -1,0 +1,48 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Masoud Varzi",
+      "username": "masoud.varzi",
+      "fine": 0,
+      "role": "ADMIN"
+    },
+    {
+      "id": 2,
+      "name": "Hamed Farahani",
+      "username": "hamed.farahani",
+      "fine": 0,
+      "role": "ADMIN"
+    },
+    {
+      "id": 1,
+      "name": "Amir Amiri ",
+      "username": "Amir.Amiri",
+      "fine": 0,
+      "role": "USER"
+    }
+  ],
+  "books": [
+    {
+      "id": 1,
+      "title": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "price": "50",
+      "free": 0
+    },
+    {
+      "id": 2,
+      "title": "The Great Gatsby",
+      "author": "F.Scott Fitzgrand",
+      "price": "150",
+      "free": 0
+    },
+    {
+      "id": 3,
+      "title": "Little Women",
+      "author": "Louisa Alcott Austen",
+      "price": "50",
+      "free": 1
+    }
+  ]
+}
