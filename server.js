@@ -4,6 +4,7 @@ const url = require("node:url");
 const db = require("./db.json");
 
 const server = http.createServer((req, res) => {
+  // get list of users
   if (req.method === "GET" && req.url === "/api/users") {
     fs.readFile("./db.json", (err, db) => {
       if (err) throw err;
@@ -13,7 +14,8 @@ const server = http.createServer((req, res) => {
       res.write(users);
       res.end();
     });
-  } else if (req.method === "GET" && req.url === "/api/books") {
+  } // get list of books
+  else if (req.method === "GET" && req.url === "/api/books") {
     fs.readFile("./db.json", (err, db) => {
       if (err) throw err;
 
@@ -22,7 +24,8 @@ const server = http.createServer((req, res) => {
       res.write(books);
       res.end();
     });
-  } else if (req.method === "DELETE" && req.url.startsWith("/api/books")) {
+  } // delete specific book
+  else if (req.method === "DELETE" && req.url.startsWith("/api/books")) {
     console.log(db, "db");
     const parsedUrl = url.parse(req.url, true);
     const bookId = parsedUrl.query.id;
@@ -42,7 +45,8 @@ const server = http.createServer((req, res) => {
       res.write(JSON.stringify({ massage: "Can not Found This Book" }));
     }
     res.end();
-  } else if (req.method === "POST" && req.url === "/api/books") {
+  } // add new book
+  else if (req.method === "POST" && req.url === "/api/books") {
     let body = "";
     req.on("data", (data) => {
       body += data;
@@ -62,7 +66,8 @@ const server = http.createServer((req, res) => {
     res.writeHead(201, { "Content-Type": "application/json" });
     res.write(JSON.stringify({ massage: "New Book is Added Successfully" }));
     res.end();
-  } else if (req.method === "PUT" && req.url.startsWith("/api/books")) {
+  } //update existing book
+  else if (req.method === "PUT" && req.url.startsWith("/api/books")) {
     const parsedUrl = url.parse(req.url, true);
     const bookId = parsedUrl.query.id;
     let body = "";
@@ -85,45 +90,62 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.write(JSON.stringify({ massage: " Book is Updated Successfully" }));
     res.end();
-  } else if (req.method === "POST" && req.url === "/api/users") {
+  } // create new user
+  else if (req.method === "POST" && req.url === "/api/users") {
     let user = "";
     req.on("data", (data) => {
       user += data;
       console.log(user);
     });
-
     req.on("end", () => {
-      const newUser = {
-        id: db.users.length + 1,
-        ...JSON.parse(user),
-        fine: 0,
-      };
-      const newDb = { ...db, users: [...db.users, newUser] };
-      console.log(newDb);
-      fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
-        if (err) throw err;
-      });
+      const { name, username, email } = JSON.parse(user);
+      const isExisted = db.users.some(
+        (user) => user.email === email || user.username === username
+      );
+      if (!name || !username || !email) {
+        console.log("name / username / email");
+        res.writeHead(422, { "Content-Type": "application/json" });
+        res.write(JSON.stringify({ massage: " User data is not Valid" }));
+      } else if (isExisted) {
+        console.log("isexsited");
+        res.writeHead(409, { "Content-Type": "application/json" });
+        res.write(
+          JSON.stringify({ massage: " email or username are already exist" })
+        );
+      } else {
+        const newUser = {
+          id: db.users.length + 1,
+          ...JSON.parse(user),
+          fine: 0,
+        };
+        const newDb = { ...db, users: [...db.users, newUser] };
+        fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
+          if (err) throw err;
+        });
+        res.writeHead(201, { "Content-Type": "application/json" });
+        res.write(
+          JSON.stringify({ massage: " User is Registered Successfully" })
+        );
+      }
+      res.end();
     });
-    res.writeHead(201 , {"Content-Type" : "application/json"});
-    res.write(JSON.stringify({ massage: " User is Registered Successfully" }));
-    res.end();
-  } else if(req.method === "PUT" && req.url.startsWith("/api/users")) {
+  } // the user is fined because of delay to return book
+  else if (req.method === "PUT" && req.url.startsWith("/api/users")) {
     const parsedUrl = url.parse(req.url, true);
     const userId = parsedUrl.query.id;
     let body = "";
     req.on("data", (data) => {
       body += data;
-     
     });
-  
-    req.on("end" , ()=> {
+
+    req.on("end", () => {
       const foundUser = db.users.find((user) => user.id === +userId);
       const updatedUser = {
         ...foundUser,
-         ...JSON.parse(body),
+        ...JSON.parse(body),
       };
       const updatedUserList = db.users.filter((user) => user.id !== +userId);
-      const newDb = {...db , users: [...updatedUserList , updatedUser]};
+      const newDb = { ...db, users: [...updatedUserList, updatedUser] };
       fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
         if (err) throw err;
       });
