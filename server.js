@@ -107,6 +107,30 @@ const server = http.createServer((req, res) => {
     res.writeHead(201 , {"Content-Type" : "application/json"});
     res.write(JSON.stringify({ massage: " User is Registered Successfully" }));
     res.end();
+  } else if(req.method === "PUT" && req.url.startsWith("/api/users")) {
+    const parsedUrl = url.parse(req.url, true);
+    const userId = parsedUrl.query.id;
+    let body = "";
+    req.on("data", (data) => {
+      body += data;
+     
+    });
+  
+    req.on("end" , ()=> {
+      const foundUser = db.users.find((user) => user.id === +userId);
+      const updatedUser = {
+        ...foundUser,
+         ...JSON.parse(body),
+      };
+      const updatedUserList = db.users.filter((user) => user.id !== +userId);
+      const newDb = {...db , users: [...updatedUserList , updatedUser]};
+      fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
+        if (err) throw err;
+      });
+    });
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.write(JSON.stringify({ massage: " user's fine is set Successfully" }));
+    res.end();
   }
 });
 
