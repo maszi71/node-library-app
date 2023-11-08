@@ -42,6 +42,26 @@ const server = http.createServer((req, res) => {
       res.write(JSON.stringify({ massage: "Can not Found This Book" }));
     }
     res.end();
+  } else if (req.method === "POST" && req.url === "/api/books") {
+    let body = "";
+    req.on("data", (data) => {
+      body += data;
+    });
+    req.on("end", () => {
+      const newBook = {
+        id: db.books.length + 1,
+        ...JSON.parse(body),
+        free: 1,
+      };
+
+      const newDb = { ...db, books: [...db.books, newBook] };
+      fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
+        if (err) throw err;
+      });
+    });
+    res.writeHead(201, { "Content-Type": "application/json" });
+    res.write(JSON.stringify({ massage: "New Book is Added Successfully" }));
+    res.end();
   } 
 });
 
