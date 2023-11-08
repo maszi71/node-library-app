@@ -62,7 +62,30 @@ const server = http.createServer((req, res) => {
     res.writeHead(201, { "Content-Type": "application/json" });
     res.write(JSON.stringify({ massage: "New Book is Added Successfully" }));
     res.end();
-  } 
+  } else if (req.method === "PUT" && req.url.startsWith("/api/books")) {
+    const parsedUrl = url.parse(req.url, true);
+    const bookId = parsedUrl.query.id;
+    let body = "";
+    req.on("data", (data) => {
+      body += data;
+    });
+    req.on("end", () => {
+      const updatedbookList = db.books.filter((book) => book.id !== +bookId);
+      const foundBook = db.books.find((book) => book.id === +bookId);
+      const updatedBook = {
+        id: foundBook.id,
+        ...JSON.parse(body),
+        free: foundBook.free,
+      };
+      const newDb = { ...db, books: [...updatedbookList, updatedBook] };
+      fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
+        if (err) throw err;
+      });
+    });
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.write(JSON.stringify({ massage: " Book is Updated Successfully" }));
+    res.end();
+  }
 });
 
 server.listen(4000, () => console.log("server is running"));
