@@ -117,6 +117,7 @@ const server = http.createServer((req, res) => {
           id: db.users.length + 1,
           ...JSON.parse(user),
           fine: 0,
+          role: "USER",
         };
         const newDb = { ...db, users: [...db.users, newUser] };
         fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
@@ -129,7 +130,23 @@ const server = http.createServer((req, res) => {
       }
       res.end();
     });
-  } // the user is fined because of delay to return book
+  } // upgrade user to admin
+   else if(req.method === "PUT" && req.url.startsWith("/api/users/upgrade")) {
+    const parsedUrl = url.parse(req.url, true);
+    const userId = parsedUrl.query.id;
+    const foundUser = db.users.find((usr) => usr.id === +userId);
+    const updatedUser = {
+      ...foundUser,
+      role : "ADMIN"
+    }
+    const updatedUserList = db.users.filter((user) => user.id !== +userId);
+    const newDb = {...db , users: [...updatedUserList , updatedUser]};
+    fs.writeFile("./db.json" , JSON.stringify(newDb) , (err) => {if(err) throw err});
+    res.writeHead(200 , {"Content-Type" : "application/json"});
+    res.write(JSON.stringify({message : "user is upgrated successfully"}));
+    res.end()
+  }
+   // the user is fined because of delay to return book
   else if (req.method === "PUT" && req.url.startsWith("/api/users")) {
     const parsedUrl = url.parse(req.url, true);
     const userId = parsedUrl.query.id;
