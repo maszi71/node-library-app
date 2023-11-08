@@ -13,7 +13,16 @@ const server = http.createServer((req, res) => {
       res.write(users);
       res.end();
     });
-  }
+  }else if (req.method === "GET" && req.url === "/api/books") {
+    fs.readFile("./db.json", (err, db) => {
+      if (err) throw err;
+
+      const books = JSON.stringify(JSON.parse(db).books);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.write(books);
+      res.end();
+    });
+  } 
 });
 
 server.listen(4000, () => console.log("server is running"));
