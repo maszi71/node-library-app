@@ -13,7 +13,7 @@ const server = http.createServer((req, res) => {
       res.write(users);
       res.end();
     });
-  }else if (req.method === "GET" && req.url === "/api/books") {
+  } else if (req.method === "GET" && req.url === "/api/books") {
     fs.readFile("./db.json", (err, db) => {
       if (err) throw err;
 
@@ -22,6 +22,26 @@ const server = http.createServer((req, res) => {
       res.write(books);
       res.end();
     });
+  } else if (req.method === "DELETE" && req.url.startsWith("/api/books")) {
+    console.log(db, "db");
+    const parsedUrl = url.parse(req.url, true);
+    const bookId = parsedUrl.query.id;
+    const updatedBookList = db.books.filter((book) => book.id !== +bookId);
+    if (updatedBookList.length !== db.books.length) {
+      fs.writeFile(
+        "./db.json",
+        JSON.stringify({ ...db, books: updatedBookList }),
+        (err) => {
+          if (err) throw err;
+        }
+      );
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.write(JSON.stringify({ massage: "Book Is Removed Successfully" }));
+    } else {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.write(JSON.stringify({ massage: "Can not Found This Book" }));
+    }
+    res.end();
   } 
 });
 
