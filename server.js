@@ -85,6 +85,28 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.write(JSON.stringify({ massage: " Book is Updated Successfully" }));
     res.end();
+  } else if (req.method === "POST" && req.url === "/api/users") {
+    let user = "";
+    req.on("data", (data) => {
+      user += data;
+      console.log(user);
+    });
+
+    req.on("end", () => {
+      const newUser = {
+        id: db.users.length + 1,
+        ...JSON.parse(user),
+        fine: 0,
+      };
+      const newDb = { ...db, users: [...db.users, newUser] };
+      console.log(newDb);
+      fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
+        if (err) throw err;
+      });
+    });
+    res.writeHead(201 , {"Content-Type" : "application/json"});
+    res.write(JSON.stringify({ massage: " User is Registered Successfully" }));
+    res.end();
   }
 });
 
