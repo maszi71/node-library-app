@@ -98,11 +98,11 @@ const server = http.createServer((req, res) => {
       console.log(user);
     });
     req.on("end", () => {
-      const { name, username, email } = JSON.parse(user);
+      const { name, username, email , password } = JSON.parse(user);
       const isExisted = db.users.some(
         (user) => user.email === email || user.username === username
       );
-      if (!name || !username || !email) {
+      if (!name || !username || !email || !password) {
         console.log("name / username / email");
         res.writeHead(422, { "Content-Type": "application/json" });
         res.write(JSON.stringify({ massage: " User data is not Valid" }));

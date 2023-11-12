@@ -6,6 +6,7 @@
       "username": "masoud.varzi",
       "email": "admin@gmail.com",
       "fine": 0,
+      "password": "@12345",
       "role": "ADMIN"
     },
     {
@@ -14,6 +15,7 @@
       "username": "hamed.farahani",
       "email": "admin@gmail.com",
       "fine": 0,
+      "password": "@12345",
       "role": "ADMIN"
     },
     {
@@ -21,6 +23,16 @@
       "name": "Amir Amiri ",
       "username": "Amir.Amiri",
       "email": "admin@gmail.com",
+      "fine": 0,
+      "password": "@12345",
+      "role": "USER"
+    },
+    {
+      "id": 4,
+      "name": "Batman",
+      "username": "batman12",
+      "email": "Batman@gmail2.com",
+      "password": "+123",
       "fine": 0,
       "role": "USER"
     }
