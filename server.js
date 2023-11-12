@@ -91,14 +91,14 @@ const server = http.createServer((req, res) => {
     res.write(JSON.stringify({ massage: " Book is Updated Successfully" }));
     res.end();
   } // create new user
-  else if (req.method === "POST" && req.url === "/api/users") {
+  else if (req.method === "POST" && req.url === "/api/auth/register") {
     let user = "";
     req.on("data", (data) => {
       user += data;
       console.log(user);
     });
     req.on("end", () => {
-      const { name, username, email , password } = JSON.parse(user);
+      const { name, username, email, password } = JSON.parse(user);
       const isExisted = db.users.some(
         (user) => user.email === email || user.username === username
       );
@@ -131,22 +131,24 @@ const server = http.createServer((req, res) => {
       res.end();
     });
   } // upgrade user to admin
-   else if(req.method === "PUT" && req.url.startsWith("/api/users/upgrade")) {
+  else if (req.method === "PUT" && req.url.startsWith("/api/users/upgrade")) {
     const parsedUrl = url.parse(req.url, true);
     const userId = parsedUrl.query.id;
     const foundUser = db.users.find((usr) => usr.id === +userId);
     const updatedUser = {
       ...foundUser,
-      role : "ADMIN"
-    }
+      role: "ADMIN",
+    };
     const updatedUserList = db.users.filter((user) => user.id !== +userId);
-    const newDb = {...db , users: [...updatedUserList , updatedUser]};
-    fs.writeFile("./db.json" , JSON.stringify(newDb) , (err) => {if(err) throw err});
-    res.writeHead(200 , {"Content-Type" : "application/json"});
-    res.write(JSON.stringify({message : "user is upgrated successfully"}));
-    res.end()
+    const newDb = { ...db, users: [...updatedUserList, updatedUser] };
+    fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
+      if (err) throw err;
+    });
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.write(JSON.stringify({ message: "user is upgrated successfully" }));
+    res.end();
   }
-   // the user is fined because of delay to return book
+  // the user is fined because of delay to return book
   else if (req.method === "PUT" && req.url.startsWith("/api/users")) {
     const parsedUrl = url.parse(req.url, true);
     const userId = parsedUrl.query.id;
@@ -170,6 +172,35 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.write(JSON.stringify({ massage: " user's fine is set Successfully" }));
     res.end();
+  } // logged in user
+  else if (req.method === "POST" && req.url === "/api/auth/login") {
+    let body = "";
+    req.on("data", (data) => {
+      body += data;
+    });
+    req.on("end", () => {
+      const { username, password } = JSON.parse(body);
+      const foundUser = db.users.find(
+        (user) => user.username === username && user.password === password
+      );
+      if (foundUser) {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.write(
+          JSON.stringify({
+            message: "You Logged In ",
+            user: { userName: foundUser.username, email: foundUser.email },
+          })
+        );
+      } else {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        res.write(
+          JSON.stringify({
+            message: "user not found "
+          })
+        );
+      }
+      res.end();
+    });
   }
 });
 
