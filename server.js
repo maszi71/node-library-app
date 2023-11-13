@@ -195,9 +195,45 @@ const server = http.createServer((req, res) => {
         res.writeHead(401, { "Content-Type": "application/json" });
         res.write(
           JSON.stringify({
-            message: "user not found "
+            message: "UserName or Password is incorrect ",
           })
         );
+      }
+      res.end();
+    });
+  } // borrow a book
+  else if (req.method === "POST" && req.url === "/api/books/borrow") {
+    let reqBody = "";
+    req.on("data", (data) => {
+      reqBody += data;
+    });
+    req.on("end", () => {
+      const { userId, bookId } = JSON.parse(reqBody);
+      const isAvailableBook = db.books.some(
+        (book) => book.id === +bookId && book.free === 1
+      );
+      if (isAvailableBook) {
+        const newBorrowed = {
+          id: db.borrowed.length + 1,
+          userId: +userId,
+          bookId: +bookId,
+        };
+        const updatedBookList = db.books.map((book) =>
+          book.id === +bookId ? {...book , free : 0} : book
+        );
+        const updatedDb = {
+          ...db,
+          books: updatedBookList,
+          borrowed: [...db.borrowed, newBorrowed],
+        };
+        fs.writeFile("./db.json", JSON.stringify(updatedDb), (err) => {
+          if (err) throw err;
+        });
+        res.writeHead(201, { "Content-Type": "application/json" });
+        res.write(JSON.stringify({ message: "Book is Reserved" }));
+      } else {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.write(JSON.stringify({ message: "Book is Not Available" }));
       }
       res.end();
     });
