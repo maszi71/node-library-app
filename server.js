@@ -66,7 +66,34 @@ const server = http.createServer((req, res) => {
     res.writeHead(201, { "Content-Type": "application/json" });
     res.write(JSON.stringify({ massage: "New Book is Added Successfully" }));
     res.end();
-  } //update existing book
+  } // return the book
+  else if (req.method === "PUT" && req.url.startsWith("/api/books/return")) {
+    const parsedUrl = url.parse(req.url, true);
+    const bookId = parsedUrl.query.id;
+    if (db.borrowed.find((borrowed) => borrowed.bookId === +bookId)) {
+      const updatedBookList = db.books.map((book) =>
+        book.id === +bookId ? { ...book, free: 1 } : book
+      );
+      const updatedBorrowedList = db.borrowed.filter(
+        (borrowedBook) => borrowedBook.bookId !== +bookId
+      );
+      const newDb = {
+        ...db,
+        books: updatedBookList,
+        borrowed: updatedBorrowedList,
+      };
+      fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
+        if (err) throw err;
+      });
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.write(JSON.stringify({ message: "Book is Returned" }));
+    } else {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.write(JSON.stringify({ message: "Book Is Not Found" }));
+    }
+    res.end();
+  }
+  //update existing book
   else if (req.method === "PUT" && req.url.startsWith("/api/books")) {
     const parsedUrl = url.parse(req.url, true);
     const bookId = parsedUrl.query.id;
@@ -219,7 +246,7 @@ const server = http.createServer((req, res) => {
           bookId: +bookId,
         };
         const updatedBookList = db.books.map((book) =>
-          book.id === +bookId ? {...book , free : 0} : book
+          book.id === +bookId ? { ...book, free: 0 } : book
         );
         const updatedDb = {
           ...db,

@@ -59,5 +59,6 @@
       "price": "50",
       "free": 1
     }
-  ]
+  ],
+  "borrowed": [{ "id": 1, "userId": 1, "bookId": 1 }]
 }
