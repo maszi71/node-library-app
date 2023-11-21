@@ -2,6 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const url = require("node:url");
 const db = require("./db.json");
+require("dotenv").config();
 const {getAllBook , removeBookById} = require("./controllers/bookController");
 
 const server = http.createServer((req, res) => {
@@ -243,4 +244,4 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(4000, () => console.log("server is running"));
+server.listen(process.env.PORT, () => console.log("server is running"));
