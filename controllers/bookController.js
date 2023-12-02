@@ -1,5 +1,5 @@
 const url = require("node:url");
-const { findAllBook, removeBook } = require("../models/Book");
+const { findAllBook, removeBook, addBook } = require("../models/Book");
 
 const getAllBook = async (req, res) => {
   const books = await findAllBook();
@@ -25,7 +25,35 @@ const removeBookById = async (req, res) => {
     });
 };
 
+const addNewBook = async (req, res) => {
+  let body = "";
+  req.on("data", (data) => {
+    body += data;
+  });
+  req.on("end", async () => {
+    const newBook = {
+      ...JSON.parse(body),
+      free: 1,
+    };
+    await addBook(newBook)
+      .then((data) => {
+        res.writeHead(201, { "Content-Type": "application/json" });
+        res.write(
+          JSON.stringify({ massage: "New Book is Added Successfully" })
+        );
+        res.end();
+      })
+      .catch((err) => {
+        console.log(err, "err");
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.write(JSON.stringify(err));
+        res.end();
+      });
+  });
+};
+
 module.exports = {
   getAllBook,
   removeBookById,
+  addNewBook,
 };

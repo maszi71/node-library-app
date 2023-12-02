@@ -3,8 +3,12 @@ const fs = require("fs");
 const url = require("node:url");
 const db = require("./db.json");
 require("dotenv").config();
-const { getAllBook, removeBookById } = require("./controllers/bookController");
-const {getAllUsers} = require("./controllers/userController");
+const {
+  getAllBook,
+  removeBookById,
+  addNewBook,
+} = require("./controllers/bookController");
+const { getAllUsers } = require("./controllers/userController");
 
 const server = http.createServer((req, res) => {
   // get list of users
@@ -18,25 +22,7 @@ const server = http.createServer((req, res) => {
     removeBookById(req, res);
   } // add new book
   else if (req.method === "POST" && req.url === "/api/books") {
-    let body = "";
-    req.on("data", (data) => {
-      body += data;
-    });
-    req.on("end", () => {
-      const newBook = {
-        id: db.books.length + 1,
-        ...JSON.parse(body),
-        free: 1,
-      };
-
-      const newDb = { ...db, books: [...db.books, newBook] };
-      fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
-        if (err) throw err;
-      });
-    });
-    res.writeHead(201, { "Content-Type": "application/json" });
-    res.write(JSON.stringify({ massage: "New Book is Added Successfully" }));
-    res.end();
+    addNewBook(req, res);
   } // return the book
   else if (req.method === "PUT" && req.url.startsWith("/api/books/return")) {
     const parsedUrl = url.parse(req.url, true);
@@ -239,5 +225,3 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(process.env.PORT, () => console.log("server is running"));
-
-

@@ -19,7 +19,18 @@ const removeBook = async (bookId) => {
   }
 };
 
+const addBook = async (newBook) => {
+  const db = await dbConnection();
+  const bookCollection = db.collection("books");
+  try {
+    return await bookCollection.insertOne(newBook);
+  } catch (e) {
+    return e;
+  }
+};
+
 module.exports = {
   findAllBook,
   removeBook,
+  addBook,
 };
