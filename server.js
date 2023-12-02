@@ -3,25 +3,19 @@ const fs = require("fs");
 const url = require("node:url");
 const db = require("./db.json");
 require("dotenv").config();
-const {getAllBook , removeBookById} = require("./controllers/bookController");
+const { getAllBook, removeBookById } = require("./controllers/bookController");
+const {getAllUsers} = require("./controllers/userController");
 
 const server = http.createServer((req, res) => {
   // get list of users
   if (req.method === "GET" && req.url === "/api/users") {
-    fs.readFile("./db.json", (err, db) => {
-      if (err) throw err;
-
-      const users = JSON.stringify(JSON.parse(db).users);
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.write(users);
-      res.end();
-    });
+    getAllUsers(req, res);
   } // get list of books
   else if (req.method === "GET" && req.url === "/api/books") {
-    getAllBook(req , res);
+    getAllBook(req, res);
   } // delete specific book
   else if (req.method === "DELETE" && req.url.startsWith("/api/books")) {
-    removeBookById(req, res)
+    removeBookById(req, res);
   } // add new book
   else if (req.method === "POST" && req.url === "/api/books") {
     let body = "";
@@ -245,3 +239,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(process.env.PORT, () => console.log("server is running"));
+
+
