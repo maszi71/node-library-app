@@ -7,6 +7,8 @@ const {
   getAllBook,
   removeBookById,
   addNewBook,
+  returnBookById,
+  borrowBookByIds
 } = require("./controllers/bookController");
 const { getAllUsers } = require("./controllers/userController");
 
@@ -25,30 +27,7 @@ const server = http.createServer((req, res) => {
     addNewBook(req, res);
   } // return the book
   else if (req.method === "PUT" && req.url.startsWith("/api/books/return")) {
-    const parsedUrl = url.parse(req.url, true);
-    const bookId = parsedUrl.query.id;
-    if (db.borrowed.find((borrowed) => borrowed.bookId === +bookId)) {
-      const updatedBookList = db.books.map((book) =>
-        book.id === +bookId ? { ...book, free: 1 } : book
-      );
-      const updatedBorrowedList = db.borrowed.filter(
-        (borrowedBook) => borrowedBook.bookId !== +bookId
-      );
-      const newDb = {
-        ...db,
-        books: updatedBookList,
-        borrowed: updatedBorrowedList,
-      };
-      fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
-        if (err) throw err;
-      });
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.write(JSON.stringify({ message: "Book is Returned" }));
-    } else {
-      res.writeHead(404, { "Content-Type": "application/json" });
-      res.write(JSON.stringify({ message: "Book Is Not Found" }));
-    }
-    res.end();
+    returnBookById(req, res);
   }
   //update existing book
   else if (req.method === "PUT" && req.url.startsWith("/api/books")) {
@@ -187,40 +166,7 @@ const server = http.createServer((req, res) => {
     });
   } // borrow a book
   else if (req.method === "POST" && req.url === "/api/books/borrow") {
-    let reqBody = "";
-    req.on("data", (data) => {
-      reqBody += data;
-    });
-    req.on("end", () => {
-      const { userId, bookId } = JSON.parse(reqBody);
-      const isAvailableBook = db.books.some(
-        (book) => book.id === +bookId && book.free === 1
-      );
-      if (isAvailableBook) {
-        const newBorrowed = {
-          id: db.borrowed.length + 1,
-          userId: +userId,
-          bookId: +bookId,
-        };
-        const updatedBookList = db.books.map((book) =>
-          book.id === +bookId ? { ...book, free: 0 } : book
-        );
-        const updatedDb = {
-          ...db,
-          books: updatedBookList,
-          borrowed: [...db.borrowed, newBorrowed],
-        };
-        fs.writeFile("./db.json", JSON.stringify(updatedDb), (err) => {
-          if (err) throw err;
-        });
-        res.writeHead(201, { "Content-Type": "application/json" });
-        res.write(JSON.stringify({ message: "Book is Reserved" }));
-      } else {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        res.write(JSON.stringify({ message: "Book is Not Available" }));
-      }
-      res.end();
-    });
+    borrowBookByIds(req, res)
   }
 });
 
