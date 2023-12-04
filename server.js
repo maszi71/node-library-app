@@ -8,9 +8,12 @@ const {
   removeBookById,
   addNewBook,
   returnBookById,
-  borrowBookByIds
+  borrowBookByIds,
 } = require("./controllers/bookController");
-const { getAllUsers } = require("./controllers/userController");
+const {
+  getAllUsers,
+  upgradeUserToAdmin,
+} = require("./controllers/userController");
 
 const server = http.createServer((req, res) => {
   // get list of users
@@ -95,21 +98,7 @@ const server = http.createServer((req, res) => {
     });
   } // upgrade user to admin
   else if (req.method === "PUT" && req.url.startsWith("/api/users/upgrade")) {
-    const parsedUrl = url.parse(req.url, true);
-    const userId = parsedUrl.query.id;
-    const foundUser = db.users.find((usr) => usr.id === +userId);
-    const updatedUser = {
-      ...foundUser,
-      role: "ADMIN",
-    };
-    const updatedUserList = db.users.filter((user) => user.id !== +userId);
-    const newDb = { ...db, users: [...updatedUserList, updatedUser] };
-    fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
-      if (err) throw err;
-    });
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.write(JSON.stringify({ message: "user is upgrated successfully" }));
-    res.end();
+    upgradeUserToAdmin(req, res);
   }
   // the user is fined because of delay to return book
   else if (req.method === "PUT" && req.url.startsWith("/api/users")) {
@@ -166,7 +155,7 @@ const server = http.createServer((req, res) => {
     });
   } // borrow a book
   else if (req.method === "POST" && req.url === "/api/books/borrow") {
-    borrowBookByIds(req, res)
+    borrowBookByIds(req, res);
   }
 });
 
