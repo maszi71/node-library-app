@@ -9,10 +9,12 @@ const {
   addNewBook,
   returnBookById,
   borrowBookByIds,
+  updateBookById
 } = require("./controllers/bookController");
 const {
   getAllUsers,
   upgradeUserToAdmin,
+  registerNewUser
 } = require("./controllers/userController");
 
 const server = http.createServer((req, res) => {
@@ -34,68 +36,10 @@ const server = http.createServer((req, res) => {
   }
   //update existing book
   else if (req.method === "PUT" && req.url.startsWith("/api/books")) {
-    const parsedUrl = url.parse(req.url, true);
-    const bookId = parsedUrl.query.id;
-    let body = "";
-    req.on("data", (data) => {
-      body += data;
-    });
-    req.on("end", () => {
-      const updatedbookList = db.books.filter((book) => book.id !== +bookId);
-      const foundBook = db.books.find((book) => book.id === +bookId);
-      const updatedBook = {
-        id: foundBook.id,
-        ...JSON.parse(body),
-        free: foundBook.free,
-      };
-      const newDb = { ...db, books: [...updatedbookList, updatedBook] };
-      fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
-        if (err) throw err;
-      });
-    });
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.write(JSON.stringify({ massage: " Book is Updated Successfully" }));
-    res.end();
+    updateBookById(req, res);
   } // create new user
   else if (req.method === "POST" && req.url === "/api/auth/register") {
-    let user = "";
-    req.on("data", (data) => {
-      user += data;
-      console.log(user);
-    });
-    req.on("end", () => {
-      const { name, username, email, password } = JSON.parse(user);
-      const isExisted = db.users.some(
-        (user) => user.email === email || user.username === username
-      );
-      if (!name || !username || !email || !password) {
-        console.log("name / username / email");
-        res.writeHead(422, { "Content-Type": "application/json" });
-        res.write(JSON.stringify({ massage: " User data is not Valid" }));
-      } else if (isExisted) {
-        console.log("isexsited");
-        res.writeHead(409, { "Content-Type": "application/json" });
-        res.write(
-          JSON.stringify({ massage: " email or username are already exist" })
-        );
-      } else {
-        const newUser = {
-          id: db.users.length + 1,
-          ...JSON.parse(user),
-          fine: 0,
-          role: "USER",
-        };
-        const newDb = { ...db, users: [...db.users, newUser] };
-        fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
-          if (err) throw err;
-        });
-        res.writeHead(201, { "Content-Type": "application/json" });
-        res.write(
-          JSON.stringify({ massage: " User is Registered Successfully" })
-        );
-      }
-      res.end();
-    });
+    registerNewUser(req , res);
   } // upgrade user to admin
   else if (req.method === "PUT" && req.url.startsWith("/api/users/upgrade")) {
     upgradeUserToAdmin(req, res);

@@ -6,9 +6,30 @@ const connectToUserCollection = async () => {
   return db.collection("users");
 };
 
+const isAvailableUser = async (email, username) => {
+  const userCollection = await connectToUserCollection();
+  return await userCollection.findOne({
+    $or: [{ email: { $eq: email } }, { username: { $eq: username } }],
+  });
+};
+
+const createNewUser = async (userInfo) => {
+  try {
+    const userCollection = await connectToUserCollection();
+    await userCollection.insertOne({
+      ...userInfo,
+      fine: 0,
+      role: "USER",
+      createdAt : new Date()
+    });
+    return { message: "user Registered successfully" };
+  } catch (e) {
+    return e;
+  }
+};
+
 const findAllUser = async () => {
-  const db = await dbConnection();
-  const userCollection = db.collection("users");
+  const userCollection = await connectToUserCollection();
   const allUsers = userCollection.find({}).toArray();
   return allUsers;
 };
@@ -27,7 +48,7 @@ const upgradeUser = async (userId) => {
       );
       return { message: "user is upgrated successfully" };
     } else {
-    return  { message: "user is not available" } ;
+      return { message: "user is not available" };
     }
   } catch (e) {
     return e;
@@ -37,4 +58,6 @@ const upgradeUser = async (userId) => {
 module.exports = {
   findAllUser,
   upgradeUser,
+  isAvailableUser,
+  createNewUser
 };
