@@ -5,6 +5,7 @@ const {
   addBook,
   returnBook,
   borrowBook,
+  updateBook,
 } = require("../models/Book");
 
 const getAllBook = async (req, res) => {
@@ -73,6 +74,32 @@ const returnBookById = async (req, res) => {
     });
 };
 
+const updateBookById = async (req, res) => {
+  const parsedUrl = url.parse(req.url, true);
+  const bookId = parsedUrl.query.id;
+  let body = "";
+  req.on("data", (data) => {
+    body += data;
+    console.log(body,'bdt')
+  });
+
+  req.on("end", async () => {
+    const parsedBody = JSON.parse(body);
+    await updateBook(bookId, parsedBody)
+      .then((data) => {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.write(JSON.stringify(data));
+        res.end();
+      })
+      .catch((err) => {
+        console.log(err);
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.write(JSON.stringify(err));
+        res.end();
+      });
+  });
+};
+
 const borrowBookByIds = async (req, res) => {
   let reqBody = "";
   req.on("data", (data) => {
@@ -101,5 +128,6 @@ module.exports = {
   removeBookById,
   addNewBook,
   returnBookById,
-  borrowBookByIds
+  borrowBookByIds,
+  updateBookById,
 };

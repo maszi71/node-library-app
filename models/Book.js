@@ -42,7 +42,6 @@ const addBook = async (newBook) => {
 };
 
 const returnBook = async (bookId) => {
-  console.log(bookId, "bookId");
   try {
     const bookCollection = await connectToBookCollection();
     const borrowedCollection = await connectToBorrowedCollection();
@@ -52,6 +51,30 @@ const returnBook = async (bookId) => {
     );
     await borrowedCollection.deleteOne({ bookId: bookId });
     return { message: "Book updated successfully" };
+  } catch (e) {
+    return e;
+  }
+};
+
+const updateBook = async (bookId, bookInfo) => {
+  try {
+    const bookCollection = await connectToBookCollection();
+    const isAvailableBook = await bookCollection.findOne({
+      _id: new ObjectId(bookId),
+    });
+    if (isAvailableBook) {
+      await bookCollection.updateOne(
+        { _id: new ObjectId(bookId) },
+        {
+          $set: {
+            ...bookInfo,
+          },
+        }
+      );
+      return { message: "Book successfully updated" };
+    } else {
+      return { message: "Book is not found" };
+    }
   } catch (e) {
     return e;
   }
@@ -90,4 +113,5 @@ module.exports = {
   addBook,
   returnBook,
   borrowBook,
+  updateBook
 };
