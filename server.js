@@ -7,13 +7,14 @@ const {
   addNewBook,
   returnBookById,
   borrowBookByIds,
-  updateBookById
+  updateBookById,
 } = require("./controllers/bookController");
 const {
   getAllUsers,
   upgradeUserToAdmin,
   registerNewUser,
-  penalizeUser
+  penalizeUser,
+  loginUser,
 } = require("./controllers/userController");
 
 const server = http.createServer((req, res) => {
@@ -38,7 +39,7 @@ const server = http.createServer((req, res) => {
     updateBookById(req, res);
   } // create new user
   else if (req.method === "POST" && req.url === "/api/auth/register") {
-    registerNewUser(req , res);
+    registerNewUser(req, res);
   } // upgrade user to admin
   else if (req.method === "PUT" && req.url.startsWith("/api/users/upgrade")) {
     upgradeUserToAdmin(req, res);
@@ -48,33 +49,7 @@ const server = http.createServer((req, res) => {
     penalizeUser(req, res);
   } // logged in user
   else if (req.method === "POST" && req.url === "/api/auth/login") {
-    let body = "";
-    req.on("data", (data) => {
-      body += data;
-    });
-    req.on("end", () => {
-      const { username, password } = JSON.parse(body);
-      const foundUser = db.users.find(
-        (user) => user.username === username && user.password === password
-      );
-      if (foundUser) {
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.write(
-          JSON.stringify({
-            message: "You Logged In ",
-            user: { userName: foundUser.username, email: foundUser.email },
-          })
-        );
-      } else {
-        res.writeHead(401, { "Content-Type": "application/json" });
-        res.write(
-          JSON.stringify({
-            message: "UserName or Password is incorrect ",
-          })
-        );
-      }
-      res.end();
-    });
+    loginUser(req, res);
   } // borrow a book
   else if (req.method === "POST" && req.url === "/api/books/borrow") {
     borrowBookByIds(req, res);

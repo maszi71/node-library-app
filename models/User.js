@@ -13,6 +13,21 @@ const isRegisteredUser = async (email, username) => {
   });
 };
 
+const isLoginUser = async (username, password) => {
+  console.log(username, password);
+  const userCollection = await connectToUserCollection();
+  try {
+    const isUser = await userCollection.findOne({
+      $and: [{ userName: { $eq: username } }, { password: { $eq: password } }],
+    });
+    return isUser
+      ? { user: isUser, message: "You Logged In " }
+      : { message: "UserName or Password is incorrect " };
+  } catch (e) {
+    return e;
+  }
+};
+
 const findUser = async (userId) => {
   const userCollection = await connectToUserCollection();
   return await userCollection.findOne({
@@ -38,7 +53,7 @@ const createNewUser = async (userInfo) => {
 const updateUser = async (userId, userInfo) => {
   try {
     const userCollection = await connectToUserCollection();
-     await userCollection.findOneAndUpdate(
+    await userCollection.findOneAndUpdate(
       { _id: new ObjectId(userId) },
       {
         $set: {
@@ -87,4 +102,5 @@ module.exports = {
   createNewUser,
   updateUser,
   findUser,
+  isLoginUser,
 };

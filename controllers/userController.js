@@ -5,6 +5,7 @@ const {
   createNewUser,
   updateUser,
   findUser,
+  isLoginUser,
 } = require("../models/User");
 const url = require("node:url");
 
@@ -98,9 +99,31 @@ const registerNewUser = async (req, res) => {
   });
 };
 
+const loginUser = async (req, res) => {
+  let body = "";
+  req.on("data", (data) => {
+    body += data;
+  });
+  req.on("end", async () => {
+    const { username, password } = JSON.parse(body);
+    await isLoginUser(username, password)
+      .then((data) => {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.write(JSON.stringify(data));
+        res.end();
+      })
+      .catch((err) => {
+        res.writeHead(409, { "Content-Type": "application/json" });
+        res.write(JSON.stringify(err));
+        res.end();
+      });
+  });
+};
+
 module.exports = {
   getAllUsers,
   upgradeUserToAdmin,
   registerNewUser,
   penalizeUser,
+  loginUser,
 };
