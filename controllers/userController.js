@@ -8,12 +8,11 @@ const {
   isLoginUser,
 } = require("../models/User");
 const url = require("node:url");
+const { writeResponse } = require("../utils/response");
 
 const getAllUsers = async (req, res) => {
   const users = await findAllUser();
-  res.writeHead(200, { "Content-Type": "application/json" });
-  res.write(JSON.stringify(users));
-  res.end();
+  writeResponse(res, users, 200, "application/json");
 };
 
 const upgradeUserToAdmin = async (req, res) => {
@@ -21,14 +20,10 @@ const upgradeUserToAdmin = async (req, res) => {
   const userId = parsedUrl.query.id;
   await upgradeUser(userId)
     .then((data) => {
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.write(JSON.stringify(data));
-      res.end();
+      writeResponse(res, data, 200, "application/json");
     })
     .catch((err) => {
-      res.writeHead(404, { "Content-Type": "application/json" });
-      res.write(JSON.stringify(err));
-      res.end();
+      writeResponse(res, err, 404, "application/json");
     });
 };
 
@@ -45,14 +40,10 @@ const penalizeUser = async (req, res) => {
     if (isAvailableUser) {
       await updateUser(userId, userInfo)
         .then((data) => {
-          res.writeHead(200, { "Content-Type": "application/json" });
-          res.write(JSON.stringify(data));
-          res.end();
+          writeResponse(res, data, 200, "application/json");
         })
         .catch((err) => {
-          res.writeHead(404, { "Content-Type": "application/json" });
-          res.write(JSON.stringify(err));
-          res.end();
+          writeResponse(res, err, 404, "application/json");
         });
     } else {
       res.writeHead(404, { "Content-Type": "application/json" });
@@ -71,29 +62,29 @@ const registerNewUser = async (req, res) => {
     const parsedUser = JSON.parse(user);
     const { name, username, email, password } = parsedUser;
     if (!name || !username || !email || !password) {
-      res.writeHead(422, { "Content-Type": "application/json" });
-      res.write(JSON.stringify({ massage: " User data is not Valid" }));
-      res.end();
+      writeResponse(
+        res,
+        { massage: " User data is not Valid" },
+        422,
+        "application/json"
+      );
       return;
     }
     const hasUser = await isRegisteredUser(email, username);
     if (hasUser) {
-      res.writeHead(409, { "Content-Type": "application/json" });
-      res.write(
-        JSON.stringify({ massage: " email or username are already exist" })
+      writeResponse(
+        res,
+        { massage: " email or username are already exist" },
+        409,
+        "application/json"
       );
-      res.end();
     } else {
       await createNewUser(parsedUser)
         .then((data) => {
-          res.writeHead(201, { "Content-Type": "application/json" });
-          res.write(JSON.stringify(data));
-          res.end();
+          writeResponse(res, data, 201, "application/json");
         })
         .catch((err) => {
-          res.writeHead(404, { "Content-Type": "application/json" });
-          res.write(JSON.stringify(err));
-          res.end();
+          writeResponse(res, err, 404, "application/json");
         });
     }
   });
@@ -108,14 +99,10 @@ const loginUser = async (req, res) => {
     const { username, password } = JSON.parse(body);
     await isLoginUser(username, password)
       .then((data) => {
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.write(JSON.stringify(data));
-        res.end();
+        writeResponse(res, data, 200, "application/json");
       })
       .catch((err) => {
-        res.writeHead(409, { "Content-Type": "application/json" });
-        res.write(JSON.stringify(err));
-        res.end();
+        writeResponse(res, err, 409, "application/json");
       });
   });
 };
