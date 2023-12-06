@@ -1,8 +1,10 @@
 const {
   findAllUser,
   upgradeUser,
-  isAvailableUser,
+  isRegisteredUser,
   createNewUser,
+  updateUser,
+  findUser,
 } = require("../models/User");
 const url = require("node:url");
 
@@ -29,11 +31,40 @@ const upgradeUserToAdmin = async (req, res) => {
     });
 };
 
+const penalizeUser = async (req, res) => {
+  const parsedUrl = url.parse(req.url, true);
+  const userId = parsedUrl.query.id;
+  let user = "";
+  req.on("data", (data) => {
+    user += data;
+  });
+  req.on("end", async () => {
+    const userInfo = JSON.parse(user);
+    const isAvailableUser = await findUser(userId);
+    if (isAvailableUser) {
+      await updateUser(userId, userInfo)
+        .then((data) => {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.write(JSON.stringify(data));
+          res.end();
+        })
+        .catch((err) => {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.write(JSON.stringify(err));
+          res.end();
+        });
+    } else {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.write(JSON.stringify({ massage: " User Not Found" }));
+      res.end();
+    }
+  });
+};
+
 const registerNewUser = async (req, res) => {
   let user = "";
   req.on("data", (data) => {
     user += data;
-    console.log(user);
   });
   req.on("end", async () => {
     const parsedUser = JSON.parse(user);
@@ -42,9 +73,9 @@ const registerNewUser = async (req, res) => {
       res.writeHead(422, { "Content-Type": "application/json" });
       res.write(JSON.stringify({ massage: " User data is not Valid" }));
       res.end();
-      return
+      return;
     }
-    const hasUser = await isAvailableUser(email, username);
+    const hasUser = await isRegisteredUser(email, username);
     if (hasUser) {
       res.writeHead(409, { "Content-Type": "application/json" });
       res.write(
@@ -53,17 +84,16 @@ const registerNewUser = async (req, res) => {
       res.end();
     } else {
       await createNewUser(parsedUser)
-      .then((data) => {
-        res.writeHead(201, { "Content-Type": "application/json" });
-        res.write(JSON.stringify(data));
-        res.end();
-      })
-      .catch((err) => {
-        console.log(err, "err");
-        res.writeHead(404, { "Content-Type": "application/json" });
-        res.write(JSON.stringify(err));
-        res.end();
-      });
+        .then((data) => {
+          res.writeHead(201, { "Content-Type": "application/json" });
+          res.write(JSON.stringify(data));
+          res.end();
+        })
+        .catch((err) => {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.write(JSON.stringify(err));
+          res.end();
+        });
     }
   });
 };
@@ -71,5 +101,6 @@ const registerNewUser = async (req, res) => {
 module.exports = {
   getAllUsers,
   upgradeUserToAdmin,
-  registerNewUser
+  registerNewUser,
+  penalizeUser,
 };

@@ -1,6 +1,4 @@
 const http = require("http");
-const fs = require("fs");
-const url = require("node:url");
 const db = require("./db.json");
 require("dotenv").config();
 const {
@@ -14,7 +12,8 @@ const {
 const {
   getAllUsers,
   upgradeUserToAdmin,
-  registerNewUser
+  registerNewUser,
+  penalizeUser
 } = require("./controllers/userController");
 
 const server = http.createServer((req, res) => {
@@ -46,28 +45,7 @@ const server = http.createServer((req, res) => {
   }
   // the user is fined because of delay to return book
   else if (req.method === "PUT" && req.url.startsWith("/api/users")) {
-    const parsedUrl = url.parse(req.url, true);
-    const userId = parsedUrl.query.id;
-    let body = "";
-    req.on("data", (data) => {
-      body += data;
-    });
-
-    req.on("end", () => {
-      const foundUser = db.users.find((user) => user.id === +userId);
-      const updatedUser = {
-        ...foundUser,
-        ...JSON.parse(body),
-      };
-      const updatedUserList = db.users.filter((user) => user.id !== +userId);
-      const newDb = { ...db, users: [...updatedUserList, updatedUser] };
-      fs.writeFile("./db.json", JSON.stringify(newDb), (err) => {
-        if (err) throw err;
-      });
-    });
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.write(JSON.stringify({ massage: " user's fine is set Successfully" }));
-    res.end();
+    penalizeUser(req, res);
   } // logged in user
   else if (req.method === "POST" && req.url === "/api/auth/login") {
     let body = "";

@@ -6,10 +6,17 @@ const connectToUserCollection = async () => {
   return db.collection("users");
 };
 
-const isAvailableUser = async (email, username) => {
+const isRegisteredUser = async (email, username) => {
   const userCollection = await connectToUserCollection();
   return await userCollection.findOne({
     $or: [{ email: { $eq: email } }, { username: { $eq: username } }],
+  });
+};
+
+const findUser = async (userId) => {
+  const userCollection = await connectToUserCollection();
+  return await userCollection.findOne({
+    _id: new ObjectId(userId),
   });
 };
 
@@ -20,9 +27,27 @@ const createNewUser = async (userInfo) => {
       ...userInfo,
       fine: 0,
       role: "USER",
-      createdAt : new Date()
+      createdAt: new Date(),
     });
     return { message: "user Registered successfully" };
+  } catch (e) {
+    return e;
+  }
+};
+
+const updateUser = async (userId, userInfo) => {
+  try {
+    const userCollection = await connectToUserCollection();
+     await userCollection.findOneAndUpdate(
+      { _id: new ObjectId(userId) },
+      {
+        $set: {
+          ...userInfo,
+          updatedAt: new Date(),
+        },
+      }
+    );
+    return { message: "user Info updated successfully" };
   } catch (e) {
     return e;
   }
@@ -58,6 +83,8 @@ const upgradeUser = async (userId) => {
 module.exports = {
   findAllUser,
   upgradeUser,
-  isAvailableUser,
-  createNewUser
+  isRegisteredUser,
+  createNewUser,
+  updateUser,
+  findUser,
 };
