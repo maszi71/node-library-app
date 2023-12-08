@@ -14,7 +14,6 @@ const isRegisteredUser = async (email, username) => {
 };
 
 const isLoginUser = async (username, password) => {
-  console.log(username, password);
   const userCollection = await connectToUserCollection();
   try {
     const isUser = await userCollection.findOne({

@@ -1,5 +1,4 @@
 const http = require("http");
-const db = require("./db.json");
 require("dotenv").config();
 const {
   getAllBook,
