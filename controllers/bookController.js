@@ -7,12 +7,12 @@ const {
   borrowBook,
   updateBook,
 } = require("../models/Book");
+const { writeResponse } = require("../utils/response");
+
 
 const getAllBook = async (req, res) => {
   const books = await findAllBook();
-  res.writeHead(200, { "Content-Type": "application/json" });
-  res.write(JSON.stringify(books));
-  res.end();
+  writeResponse(res, books, 200, "application/json");
 };
 
 const removeBookById = async (req, res) => {
@@ -20,15 +20,10 @@ const removeBookById = async (req, res) => {
   const bookId = parsedUrl.query.id;
   await removeBook(bookId)
     .then((data) => {
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.write(JSON.stringify(data));
-      res.end();
+      writeResponse(res, data, 200, "application/json");
     })
     .catch((err) => {
-      console.log(err, "err");
-      res.writeHead(404, { "Content-Type": "application/json" });
-      res.write(JSON.stringify(err));
-      res.end();
+      writeResponse(res, err, 404, "application/json");
     });
 };
 
@@ -44,15 +39,10 @@ const addNewBook = async (req, res) => {
     };
     await addBook(newBook)
       .then((data) => {
-        res.writeHead(201, { "Content-Type": "application/json" });
-        res.write(JSON.stringify(data));
-        res.end();
+        writeResponse(res, data, 201, "application/json");
       })
       .catch((err) => {
-        console.log(err, "err");
-        res.writeHead(404, { "Content-Type": "application/json" });
-        res.write(JSON.stringify(err));
-        res.end();
+        writeResponse(res, err, 404, "application/json");
       });
   });
 };
@@ -62,15 +52,10 @@ const returnBookById = async (req, res) => {
   const bookId = parsedUrl.query.id;
   await returnBook(bookId)
     .then((data) => {
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.write(JSON.stringify(data));
-      res.end();
+      writeResponse(res, data, 200, "application/json");
     })
     .catch((err) => {
-      console.log(err);
-      res.writeHead(404, { "Content-Type": "application/json" });
-      res.write(JSON.stringify(err));
-      res.end();
+      writeResponse(res, err, 404, "application/json");
     });
 };
 
@@ -80,22 +65,16 @@ const updateBookById = async (req, res) => {
   let body = "";
   req.on("data", (data) => {
     body += data;
-    console.log(body,'bdt')
   });
 
   req.on("end", async () => {
     const parsedBody = JSON.parse(body);
     await updateBook(bookId, parsedBody)
       .then((data) => {
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.write(JSON.stringify(data));
-        res.end();
+        writeResponse(res, data, 200, "application/json");
       })
       .catch((err) => {
-        console.log(err);
-        res.writeHead(404, { "Content-Type": "application/json" });
-        res.write(JSON.stringify(err));
-        res.end();
+        writeResponse(res, err, 404, "application/json");
       });
   });
 };
@@ -110,15 +89,10 @@ const borrowBookByIds = async (req, res) => {
     const { userId, bookId } = JSON.parse(reqBody);
     await borrowBook(userId, bookId)
       .then((data) => {
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.write(JSON.stringify(data));
-        res.end();
+        writeResponse(res, data, 200, "application/json");
       })
       .catch((err) => {
-        console.log(err);
-        res.writeHead(404, { "Content-Type": "application/json" });
-        res.write(JSON.stringify(err));
-        res.end();
+        writeResponse(res, err, 404, "application/json");
       });
   });
 };
