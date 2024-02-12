@@ -15,7 +15,7 @@ A simple Node.js backend project for a library management system where users can
 
 ## Installation
    ```bash
-   git clone https://github.com/maszi71/simple-library-api.git
-   cd simple-library-api
+   git clone git@github.com:maszi71/node-library-app.git
+   cd node-library-app
    npm install
    npm start
